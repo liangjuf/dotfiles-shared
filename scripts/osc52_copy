@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+# osc52_copy: copy text to the *local* clipboard over SSH (tmux-aware).
+# Usage:
+#   echo "hello" | osc52_copy
+#   osc52_copy "hello"
+
+set -euo pipefail
+
+if [ $# -gt 0 ]; then
+    data="$*"
+else
+    data="$(cat || true)"
+fi
+
+[ -n "${data:-}" ] || exit 0
+
+# Base64 with no wrapping (GNU/BSD compatible).
+b64_nowrap() {
+    if base64 --help 2>&1 | grep -q -- ' -w '; then
+        base64 -w0
+    elif base64 --help 2>&1 | grep -q -- ' -b '; then
+        base64 -b 0
+    else
+        base64 | tr -d '\n'
+    fi
+}
+
+b64="$(printf %s "$data" | b64_nowrap)"
+
+if [ -n "${TMUX:-}" ]; then
+    # DCS passthrough for tmux.
+    printf '\ePtmux;\e\e]52;c;%s\a\e\\' "$b64"
+else
+    printf '\e]52;c;%s\a' "$b64"
+fi
