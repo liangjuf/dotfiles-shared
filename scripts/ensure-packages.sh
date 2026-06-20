@@ -4,6 +4,10 @@
 
 set -euo pipefail
 
+# Unattended bootstrap — no installer prompts (callers: install.sh, bootstrap-ec2.sh)
+export NONINTERACTIVE=1
+export HOMEBREW_NO_AUTO_UPDATE=1
+
 LOCAL_BIN="${LOCAL_BIN:-$HOME/.local/bin}"
 mkdir -p "$LOCAL_BIN"
 
@@ -34,7 +38,7 @@ install_apt() {
     local name="$1"
     dpkg -s "$name" &>/dev/null 2>&1 && return 0
     log "apt install $name"
-    sudo apt-get install -y "$name"
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$name"
 }
 
 install_archive() {
@@ -102,7 +106,7 @@ install_one() {
             npm_pkg="$(pkg_field "$block" package)"
             npm_pkg="${npm_pkg:-$name}"
             log "npm install -g $npm_pkg"
-            npm install -g "$npm_pkg"
+            npm install -g --yes "$npm_pkg"
             ;;
         binary)
             url="$(pkg_field "$block" url)"
