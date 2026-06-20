@@ -21,7 +21,6 @@ overlays/                 # role snippets (chezmoi machines)
 packages.toml             # shared package manifest (TOML)
 scripts/
   ensure-packages.sh      # install from packages.toml
-  osc52_copy              # tmux OSC52 clipboard helper
 zsh/                      # 00-env … 40-completion
 p10k.zsh
 tmux.conf
