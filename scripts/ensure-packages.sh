@@ -51,9 +51,13 @@ install_archive() {
 }
 
 install_curl() {
-    local version="$1" url="$2"
-    url="${url//\{version\}/$version}"
-    log "curl install uv $version"
+    local name="$1" version="$2" url="$3"
+    if [ -n "$version" ]; then
+        url="${url//\{version\}/$version}"
+        log "curl install $name ($version)"
+    else
+        log "curl install $name (latest)"
+    fi
     curl --proto '=https' --tlsv1.2 -LsSf "$url" | sh
 }
 
@@ -91,7 +95,7 @@ install_one() {
         curl)
             version="$(pkg_field "$block" version)"
             installer_url="$(pkg_field "$block" installer_url)"
-            install_curl "$version" "$installer_url"
+            install_curl "$name" "$version" "$installer_url"
             ;;
         npm)
             local npm_pkg
