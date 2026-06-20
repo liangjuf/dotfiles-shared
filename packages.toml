@@ -1,0 +1,113 @@
+# Shared cross-platform packages (all roles).
+# Install: scripts/ensure-packages.sh packages.toml
+#
+# Linux: Homebrew must be installed before running (see plan — bootstrap-ec2.sh / install.sh).
+
+# --- batch 1: shell & search ---
+[[package]]
+name = "zsh"
+description = "Z shell — interactive shell with strong completion and scripting features."
+method = "brew"
+check = "zsh --version"
+
+[[package]]
+name = "jq"
+description = "Command-line JSON processor for filtering and transforming structured data."
+method = "brew"
+check = "jq --version"
+
+[[package]]
+name = "tmux"
+description = "Terminal multiplexer for persistent sessions, splits, and remote work."
+method = "brew"
+check = "tmux -V"
+
+[[package]]
+name = "fzf"
+description = "Fuzzy finder for quickly searching files, history, and command output."
+method = "brew"
+check = "fzf --version"
+
+[[package]]
+name = "fd"
+description = "Fast, user-friendly alternative to find for locating files by name."
+method = "brew"
+check = "fd --version"
+
+[[package]]
+name = "ripgrep"
+description = "Fast recursive grep (rg) for searching code and text across directories."
+method = "brew"
+check = "rg --version"
+
+[[package]]
+name = "eza"
+description = "Modern ls replacement with icons, git status, and tree views."
+method = "brew"
+check = "eza --version"
+
+[[package]]
+name = "bat"
+description = "cat with syntax highlighting and Git integration for viewing files."
+method = "brew"
+check = "bat --version"
+
+# --- batch 2: tools & secrets ---
+[[package]]
+name = "atuin"
+description = "Shell history sync and search with optional encrypted cloud backup."
+method = "brew"
+check = "atuin --version"
+
+[[package]]
+name = "zoxide"
+description = "Smart cd that learns your most-used directories for faster navigation."
+method = "brew"
+check = "zoxide --version"
+
+[[package]]
+name = "gh"
+description = "GitHub CLI for repos, issues, PRs, and workflows from the terminal."
+method = "brew"
+check = "gh --version"
+
+[[package]]
+name = "lazygit"
+description = "Terminal UI for Git — stage, commit, rebase, and resolve conflicts visually."
+method = "brew"
+check = "lazygit --version"
+
+[[package]]
+name = "pass"
+description = "Unix password manager storing secrets as GPG-encrypted files in a tree."
+method = "brew"
+check = "pass version"
+
+[[package]]
+name = "bubblewrap"
+description = "Lightweight sandbox (bwrap) for isolating untrusted or ephemeral processes."
+method = "brew"
+check = "bwrap --version"
+
+[[package]]
+name = "btop"
+description = "Resource monitor showing CPU, memory, disk, and network usage in the terminal."
+method = "brew"
+check = "btop --version"
+
+# --- pinned / curl binaries ---
+[[package]]
+name = "delta"
+description = "Git-aware diff pager with syntax highlighting and side-by-side views."
+method = "archive"
+check = "delta --version"
+url = "https://github.com/dandavison/delta/releases/download/0.18.2/delta-0.18.2-x86_64-unknown-linux-gnu.tar.gz"
+archive_bin = "delta"
+os = "linux"
+
+[[package]]
+name = "uv"
+description = "Fast Python package and project manager (pip/venv replacement by Astral)."
+method = "curl"
+check = "uv --version"
+installer_url = "https://astral.sh/uv/install.sh"
