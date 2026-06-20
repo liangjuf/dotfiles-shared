@@ -1,33 +1,43 @@
 # dotfiles-shared
 
-Cross-platform shell and tool configuration shared between:
+Public cross-platform shell and tool configuration for the multi-machine dotfiles setup.
 
-- **Roblox dotfiles** (Coder devspaces) — git submodule at `shared/`
-- **chezmoi source** (Mac Mini, work MacBook, EC2) — git submodule at `shared/`
+**Consumers** (git submodule at `shared/`):
 
-## Layout
+- [lfeng/dotfiles](https://github.rbx.com/lfeng/dotfiles) — Coder devspaces (`work-devspace`)
+- [liangjuf/dotfiles](https://github.com/liangjuf/dotfiles) — chezmoi (`personal-mac`, `work-mac`, `personal-ec2`)
+
+## Layout (phase 1)
 
 ```
-zsh/           # Sourced in order by each machine's .zshrc
-config/        # Tool configs (atuin, git base)
-overlays/      # Role-specific zsh snippets (work-mac, personal-ec2, …)
-p10k.zsh       # Powerlevel10k prompt
-Brewfile       # Homebrew packages (macOS + Linuxbrew)
+config/
+  atuin/config.toml
+  git/gitconfig.shared    # delta, merge; no [user] email
+zsh/
+  00-env.zsh              # PATH, Homebrew, p10k instant prompt
+  10-history.zsh          # HISTSIZE, share_history
+  20-omz.zsh              # Oh My Zsh + Powerlevel10k
+  30-tools.zsh            # zoxide, atuin, fzf, eza, aliases
+  40-completion.zsh       # compinit, menu select
+p10k.zsh
+tmux.conf
 ```
 
 ## Usage
 
-Each consumer repo sources shared zsh files, then its role overlay:
+Source zsh files in numeric order, then the consumer's role overlay:
 
 ```zsh
-# Example (paths vary by consumer)
-for f in "$SHARED/zsh"/*.zsh(N); do source "$f"; done
-source "$SHARED/overlays/${ROLE}.zsh"
+SHARED="${SHARED:-$HOME/dotfiles/shared}"
+for f in "$SHARED"/zsh/*.zsh(N); do source "$f"; done
+source "$SHARED/overlays/${ROLE}.zsh"  # overlays added in a later phase
 ```
+
+Symlink or template `p10k.zsh` → `~/.p10k.zsh`, `tmux.conf` → `~/.tmux.conf`.
 
 ## Sync workflow
 
-1. Edit shared config here
-2. Commit and push `dotfiles-shared`
-3. In Roblox dotfiles: `git submodule update --remote shared && git commit -am "Bump shared"`
-4. On Mac/EC2: `chezmoi update`
+1. Edit and push this repo.
+2. Bump the `shared/` submodule SHA in the consumer repo.
+3. Devspace: restart workspace (`install.sh` pulls on start).
+4. Mac/EC2: `chezmoi update`.
