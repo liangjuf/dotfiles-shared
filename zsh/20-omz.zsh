@@ -7,12 +7,11 @@ plugins=(
   git
   kubectl
   python
-  sublime
   aliases
+  uv
+  vi-mode
   zsh-autosuggestions
   zsh-syntax-highlighting
-  zsh-vi-mode
-  uv
 )
 
 if [[ -r "$ZSH/oh-my-zsh.sh" ]]; then

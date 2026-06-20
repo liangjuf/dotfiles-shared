@@ -12,7 +12,7 @@ fi
 # --- Performance ---
 export ZSH_DISABLE_COMPFIX=true
 
-# --- p10k instant prompt (must stay near top) ---
+# --- p10k instant prompt (must stay near top of the sourced chain) ---
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
