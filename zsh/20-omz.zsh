@@ -7,6 +7,7 @@ plugins=(
   git
   kubectl
   python
+  aliases
   uv
   vi-mode
   zsh-autosuggestions
