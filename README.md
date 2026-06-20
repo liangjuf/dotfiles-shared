@@ -11,6 +11,7 @@ Public cross-platform shell and tool configuration for the multi-machine dotfile
 
 ```
 agents/AGENTS.md          # generic agent guidelines (public)
+skills/shared/            # public agent skills (linked by link-skills.sh)
 config/
   atuin/config.toml
   git/gitconfig.shared
@@ -21,6 +22,7 @@ overlays/                 # role snippets (chezmoi machines)
 packages.toml             # shared package manifest (TOML)
 scripts/
   ensure-packages.sh      # install from packages.toml
+  link-skills.sh          # symlink skills → ~/.claude/skills, ~/.codex/skills
 zsh/                      # 00-env … 40-completion
 p10k.zsh
 tmux.conf
