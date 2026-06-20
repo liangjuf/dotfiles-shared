@@ -15,5 +15,3 @@ if [[ -o interactive && -t 0 ]]; then
   export GPG_TTY="$(tty)"
   gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 fi
-
-export CLAUDE_CODE_NO_FLICKER=1
