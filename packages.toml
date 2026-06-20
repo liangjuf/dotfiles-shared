@@ -1,0 +1,142 @@
+# Shared cross-platform packages (all roles).
+# Install: scripts/ensure-packages.sh packages.toml
+
+# --- batch 1: shell & search ---
+[[package]]
+name = "zsh"
+method = "brew"
+check = "zsh --version"
+
+[[package]]
+name = "jq"
+method = "brew"
+check = "jq --version"
+
+[[package]]
+name = "tmux"
+method = "brew"
+check = "tmux -V"
+
+[[package]]
+name = "fzf"
+method = "brew"
+check = "fzf --version"
+
+[[package]]
+name = "fd"
+method = "brew"
+check = "fd --version"
+
+[[package]]
+name = "ripgrep"
+method = "brew"
+check = "rg --version"
+
+[[package]]
+name = "eza"
+method = "brew"
+check = "eza --version"
+
+[[package]]
+name = "bat"
+method = "brew"
+check = "bat --version"
+
+# apt equivalents (Linux without Homebrew)
+[[package]]
+name = "jq"
+method = "apt"
+check = "jq --version"
+
+[[package]]
+name = "tmux"
+method = "apt"
+check = "tmux -V"
+
+[[package]]
+name = "fzf"
+method = "apt"
+check = "fzf --version"
+
+[[package]]
+name = "fd"
+method = "apt"
+apt = "fd-find"
+check = "fdfind --version"
+
+[[package]]
+name = "ripgrep"
+method = "apt"
+check = "rg --version"
+
+[[package]]
+name = "bat"
+method = "apt"
+check = "bat --version"
+
+# --- batch 2: tools & secrets ---
+[[package]]
+name = "atuin"
+method = "brew"
+check = "atuin --version"
+
+[[package]]
+name = "zoxide"
+method = "brew"
+check = "zoxide --version"
+
+[[package]]
+name = "gh"
+method = "brew"
+check = "gh --version"
+
+[[package]]
+name = "lazygit"
+method = "brew"
+check = "lazygit --version"
+
+[[package]]
+name = "pass"
+method = "brew"
+check = "pass version"
+
+[[package]]
+name = "bubblewrap"
+method = "brew"
+check = "bwrap --version"
+
+[[package]]
+name = "btop"
+method = "brew"
+check = "btop --version"
+
+[[package]]
+name = "pass"
+method = "apt"
+check = "pass version"
+
+[[package]]
+name = "bubblewrap"
+method = "apt"
+check = "bwrap --version"
+
+[[package]]
+name = "htop"
+method = "apt"
+check = "htop --version"
+
+# --- pinned binaries ---
+[[package]]
+name = "delta"
+method = "archive"
+check = "delta --version"
+url = "https://github.com/dandavison/delta/releases/download/0.18.2/delta-0.18.2-x86_64-unknown-linux-gnu.tar.gz"
+archive_bin = "delta"
+os = "linux"
+
+[[package]]
+name = "uv"
+method = "curl"
+version = "0.6.2"
+check = "uv --version"
+installer_url = "https://github.com/astral-sh/uv/releases/download/{version}/uv-installer.sh"

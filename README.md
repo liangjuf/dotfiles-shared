@@ -10,15 +10,19 @@ Public cross-platform shell and tool configuration for the multi-machine dotfile
 ## Layout (phase 1)
 
 ```
+agents/AGENTS.md          # generic agent guidelines (public)
 config/
   atuin/config.toml
-  git/gitconfig.shared    # delta, merge; no [user] email
-zsh/
-  00-env.zsh              # PATH, Homebrew, p10k instant prompt
-  10-history.zsh          # HISTSIZE, share_history
-  20-omz.zsh              # Oh My Zsh + Powerlevel10k
-  30-tools.zsh            # zoxide, atuin, fzf, eza, aliases
-  40-completion.zsh       # compinit, menu select
+  git/gitconfig.shared
+overlays/                 # role snippets (chezmoi machines)
+  work-mac.zsh
+  personal-mac.zsh
+  personal-ec2.zsh
+packages.toml             # shared package manifest (TOML)
+scripts/
+  ensure-packages.sh      # install from packages.toml
+  osc52_copy              # tmux OSC52 clipboard helper
+zsh/                      # 00-env … 40-completion
 p10k.zsh
 tmux.conf
 ```
@@ -30,7 +34,7 @@ Source zsh files in numeric order, then the consumer's role overlay:
 ```zsh
 SHARED="${SHARED:-$HOME/dotfiles/shared}"
 for f in "$SHARED"/zsh/*.zsh(N); do source "$f"; done
-source "$SHARED/overlays/${ROLE}.zsh"  # overlays added in a later phase
+source "$SHARED/overlays/${ROLE}.zsh"
 ```
 
 Symlink or template `p10k.zsh` → `~/.p10k.zsh`, `tmux.conf` → `~/.tmux.conf`.
