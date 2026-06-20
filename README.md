@@ -46,16 +46,18 @@ Symlink or template `p10k.zsh` → `~/.p10k.zsh`, `tmux.conf` → `~/.tmux.conf`
 
 After merging a change here, each repo that depends on `shared/` must record the new commit. Git stores that pointer in the parent repo — machines do not pick up shared edits until you bump and push.
 
-**GHE dotfiles** (Coder devspaces):
+**GHE dotfiles** (your fork — push and PR here only):
 
 ```bash
-cd ~/dotfiles   # or your clone of github.rbx.com/lfeng/dotfiles
+cd ~/dotfiles   # clone of https://github.rbx.com/lfeng/dotfiles
 git fetch origin
-git submodule update --remote shared   # checkout latest dotfiles-shared on main
+git submodule update --remote shared
 git add shared
 git commit -m "Bump shared submodule"
-git push
+git push origin master   # or your feature branch, then PR to lfeng/dotfiles
 ```
+
+Do **not** open PRs against the upstream/original GHE repo you forked from.
 
 **GHC chezmoi source** (Mac / EC2):
 
