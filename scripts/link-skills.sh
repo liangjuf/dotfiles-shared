@@ -13,6 +13,9 @@ CONSUMER_ROOT="${2:-${DOTFILES_ROOT:-}}"
 
 CLAUDE_SKILLS="${CLAUDE_SKILLS:-$HOME/.claude/skills}"
 CODEX_SKILLS="${CODEX_SKILLS:-$HOME/.codex/skills}"
+CURSOR_SKILLS="${CURSOR_SKILLS:-$HOME/.cursor/skills}"
+
+SKILL_DEST_DIRS=("$CLAUDE_SKILLS" "$CODEX_SKILLS" "$CURSOR_SKILLS")
 
 log() { echo "[link-skills] $*"; }
 
@@ -61,6 +64,6 @@ link_all_tiers() {
     fi
 }
 
-for dest_root in "$CLAUDE_SKILLS" "$CODEX_SKILLS"; do
+for dest_root in "${SKILL_DEST_DIRS[@]}"; do
     link_all_tiers "$dest_root"
 done
