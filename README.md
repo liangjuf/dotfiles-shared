@@ -22,6 +22,7 @@ overlays/                 # role snippets (chezmoi machines)
 packages.toml             # shared package manifest (TOML)
 scripts/
   ensure-packages.sh      # install from packages.toml
+  init-omz.sh             # clone OMZ + p10k + plugins (no upstream installer)
   link-skills.sh              # symlink skills → ~/.claude/skills, ~/.codex/skills
   link-agent-guidelines.sh    # AGENTS.md → ~/.codex/AGENTS.md; ~/.claude/CLAUDE.md
 zsh/                      # 00-env … 40-completion
