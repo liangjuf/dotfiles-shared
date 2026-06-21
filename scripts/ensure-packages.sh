@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-# Unattended bootstrap — no installer prompts (callers: install.sh, bootstrap-ec2.sh)
+# Unattended bootstrap — no installer prompts (callers: install.sh, bootstrap.sh)
 export NONINTERACTIVE=1
 export HOMEBREW_NO_AUTO_UPDATE=1
 
