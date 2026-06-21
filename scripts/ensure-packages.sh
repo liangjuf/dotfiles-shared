@@ -65,9 +65,19 @@ install_curl() {
     curl --proto '=https' --tlsv1.2 -LsSf "$url" | sh
 }
 
+install_git_install() {
+    local repo_url="$1" install_script="${2:-install.sh}"
+    local tmp
+    tmp="$(mktemp -d)"
+    log "git-install $repo_url ($install_script)"
+    git clone --depth 1 "$repo_url" "$tmp"
+    bash "$tmp/$install_script"
+    rm -rf "$tmp"
+}
+
 install_one() {
     local block="$1"
-    local name method check os apt_name url version installer_url archive_bin
+    local name method check os apt_name url version installer_url archive_bin repo_url install_script
     name="$(pkg_field "$block" name)"
     method="$(pkg_field "$block" method)"
     check="$(pkg_field "$block" check)"
@@ -113,6 +123,11 @@ install_one() {
             log "binary install $name"
             curl -fsSL "$url" -o "$LOCAL_BIN/$name"
             chmod +x "$LOCAL_BIN/$name"
+            ;;
+        git-install)
+            repo_url="$(pkg_field "$block" repo_url)"
+            install_script="$(pkg_field "$block" install_script)"
+            install_git_install "$repo_url" "${install_script:-install.sh}"
             ;;
         *) log "unknown method '$method' for $name" ;;
     esac
