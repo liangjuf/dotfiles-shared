@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
-# link-agent-guidelines.sh — symlink shared AGENTS.md into agent config dirs.
+# link-agent-guidelines.sh — symlink shared AGENTS.md into agent global config paths.
+# Codex reads ~/.codex/AGENTS.md; Claude Code reads ~/.claude/CLAUDE.md (not AGENTS.md).
+# Cursor uses project-root AGENTS.md and ~/.cursor/rules/ — no global ~/.cursor/AGENTS.md.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SHARED="${SHARED:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 SRC="$SHARED/agents/AGENTS.md"
 
-CLAUDE_AGENTS="${CLAUDE_AGENTS:-$HOME/.claude/AGENTS.md}"
-CODEX_AGENTS="${CODEX_AGENTS:-$HOME/.codex/AGENTS.md}"
-CURSOR_AGENTS="${CURSOR_AGENTS:-$HOME/.cursor/AGENTS.md}"
+CLAUDE_GUIDELINES="${CLAUDE_GUIDELINES:-$HOME/.claude/CLAUDE.md}"
+CODEX_GUIDELINES="${CODEX_GUIDELINES:-$HOME/.codex/AGENTS.md}"
 
-AGENT_GUIDELINE_DESTS=("$CLAUDE_AGENTS" "$CODEX_AGENTS" "$CURSOR_AGENTS")
+AGENT_GUIDELINE_DESTS=("$CLAUDE_GUIDELINES" "$CODEX_GUIDELINES")
 
 log() { echo "[link-agent-guidelines] $*"; }
 
