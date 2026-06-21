@@ -66,10 +66,6 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 For feature development, non-trivial refactors, and PR-bound changes, invoke the `use-worktree-to-develop-feature` skill before editing. The skill owns branch naming, worktree placement, and cleanup rules.
 
-## 6. W&B Reports
-
-When writing W&B reports, always use `width: fluent`.
-
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
