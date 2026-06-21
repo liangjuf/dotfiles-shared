@@ -23,7 +23,7 @@ packages.toml             # shared package manifest (TOML)
 scripts/
   ensure-packages.sh      # install from packages.toml
   link-skills.sh              # symlink skills → ~/.claude/skills, ~/.codex/skills
-  link-agent-guidelines.sh    # symlink AGENTS.md → ~/.claude, ~/.codex, ~/.cursor
+  link-agent-guidelines.sh    # AGENTS.md → ~/.codex/AGENTS.md; ~/.claude/CLAUDE.md
 zsh/                      # 00-env … 40-completion
 p10k.zsh
 tmux.conf
