@@ -88,32 +88,48 @@ install_one() {
     [ -n "$name" ] || return 0
     [ -z "$os_filter" ] || [ "$(uname -s | tr '[:upper:]' '[:lower:]')" = "$os_filter" ] || return 0
 
-    if already_installed "$check"; then
-        log "skip $name (already installed)"
-        return 0
-    fi
-
     case "$method" in
         brew)
+            if command -v brew &>/dev/null && brew list "$name" &>/dev/null 2>&1; then
+                log "skip $name (already installed)"
+                return 0
+            fi
             command -v brew &>/dev/null || return 0
             install_brew "$name"
             ;;
         apt)
-            command -v apt-get &>/dev/null || return 0
             apt_name="$(pkg_field "$block" apt)"
-            install_apt "${apt_name:-$name}"
+            apt_name="${apt_name:-$name}"
+            if dpkg -s "$apt_name" &>/dev/null 2>&1; then
+                log "skip $name (already installed)"
+                return 0
+            fi
+            command -v apt-get &>/dev/null || return 0
+            install_apt "$apt_name"
             ;;
         archive)
+            if already_installed "$check"; then
+                log "skip $name (already installed)"
+                return 0
+            fi
             url="$(pkg_field "$block" url)"
             archive_bin="$(pkg_field "$block" archive_bin)"
             install_archive "$url" "$archive_bin"
             ;;
         curl)
+            if already_installed "$check"; then
+                log "skip $name (already installed)"
+                return 0
+            fi
             version="$(pkg_field "$block" version)"
             installer_url="$(pkg_field "$block" installer_url)"
             install_curl "$name" "$version" "$installer_url"
             ;;
         npm)
+            if already_installed "$check"; then
+                log "skip $name (already installed)"
+                return 0
+            fi
             local npm_pkg
             npm_pkg="$(pkg_field "$block" package)"
             npm_pkg="${npm_pkg:-$name}"
@@ -121,12 +137,20 @@ install_one() {
             npm install -g --yes "$npm_pkg"
             ;;
         binary)
+            if already_installed "$check"; then
+                log "skip $name (already installed)"
+                return 0
+            fi
             url="$(pkg_field "$block" url)"
             log "binary install $name"
             curl -fsSL "$url" -o "$LOCAL_BIN/$name"
             chmod +x "$LOCAL_BIN/$name"
             ;;
         git-install)
+            if already_installed "$check"; then
+                log "skip $name (already installed)"
+                return 0
+            fi
             repo_url="$(pkg_field "$block" repo_url)"
             install_script="$(pkg_field "$block" install_script)"
             install_git_install "$repo_url" "${install_script:-install.sh}"
