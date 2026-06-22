@@ -46,9 +46,21 @@ typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_THRESHOLD=3
 typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_PRECISION=0
 typeset -g POWERLEVEL9K_TIME_FORMAT='%D{%H:%M:%S}'
 
-# Show short Kubernetes context names. For EKS ARNs, strip everything before
-# the final `/cluster-name` path component and keep the namespace visible.
-typeset -g POWERLEVEL9K_KUBECONTEXT_CONTENT_EXPANSION='${${P9K_KUBECONTEXT_CLOUD_CLUSTER:-${P9K_KUBECONTEXT_CLUSTER:t}}:-${P9K_KUBECONTEXT_NAME:t}}${P9K_KUBECONTEXT_NAMESPACE:+/$P9K_KUBECONTEXT_NAMESPACE}'
+# Short kube prompt: last two cluster hyphen segments (e.g. prod-5) and
+# kubeflow-* namespace prefix stripped (e.g. creator-code).
+_p9k_kubecontext_short() {
+  local cluster=${${P9K_KUBECONTEXT_CLOUD_CLUSTER:-${P9K_KUBECONTEXT_CLUSTER:t}}:-${P9K_KUBECONTEXT_NAME:t}}
+  local -a parts=(${(s:-:)cluster})
+  if (( ${#parts} >= 3 )); then
+    cluster="${parts[-2]}-${parts[-1]}"
+  fi
+  if [[ -n $P9K_KUBECONTEXT_NAMESPACE ]]; then
+    print -rn -- "$cluster/${P9K_KUBECONTEXT_NAMESPACE#kubeflow-}"
+  else
+    print -rn -- "$cluster"
+  fi
+}
+typeset -g POWERLEVEL9K_KUBECONTEXT_CONTENT_EXPANSION='$(_p9k_kubecontext_short)'
 typeset -g POWERLEVEL9K_KUBECONTEXT_DEFAULT_CONTENT_EXPANSION="$POWERLEVEL9K_KUBECONTEXT_CONTENT_EXPANSION"
 
 typeset -g POWERLEVEL9K_PROMPT_CHAR_OK_VICMD_CONTENT_EXPANSION='❮'
