@@ -65,7 +65,7 @@ install_curl() {
     else
         log "curl install $name (latest)"
     fi
-    curl --proto '=https' --tlsv1.2 -LsSf "$url" | sh
+    curl --proto '=https' --tlsv1.2 -LsSf "$url" | bash
 }
 
 install_git_install() {
