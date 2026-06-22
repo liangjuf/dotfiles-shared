@@ -7,6 +7,7 @@ set -euo pipefail
 # Unattended bootstrap — no installer prompts (callers: install.sh, bootstrap.sh)
 export NONINTERACTIVE=1
 export HOMEBREW_NO_AUTO_UPDATE=1
+export HOMEBREW_NO_INSTALL_CLEANUP=1
 
 LOCAL_BIN="${LOCAL_BIN:-$HOME/.local/bin}"
 mkdir -p "$LOCAL_BIN"
