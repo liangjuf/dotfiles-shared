@@ -15,11 +15,13 @@ log() { echo "[ensure-packages] $*"; }
 
 pkg_field() {
     local block="$1" key="$2"
-    echo "$block" | awk -v k="$key" -F= '$1 ~ "^[[:space:]]*" k "[[:space:]]*=" {
-        sub(/^[^=]*=[[:space:]]*/, "", $0)
-        gsub(/^["'\'']|["'\'']$/, "", $0)
-        print $0
-    }' | head -1
+    echo "$block" | awk -v k="$key" '
+        $0 ~ "^[[:space:]]*" k "[[:space:]]*=" {
+            sub(/^[^=]*=[[:space:]]*/, "", $0)
+            gsub(/^["'\''"]|["'\''"]$/, "", $0)
+            print $0
+            exit
+        }'
 }
 
 already_installed() {
