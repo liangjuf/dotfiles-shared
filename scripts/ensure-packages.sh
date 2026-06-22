@@ -14,6 +14,27 @@ mkdir -p "$LOCAL_BIN"
 
 log() { echo "[ensure-packages] $*"; }
 
+_ensure_brew_path() {
+    if command -v brew &>/dev/null; then
+        # shellcheck disable=SC1091
+        eval "$(brew shellenv)"
+        return 0
+    fi
+    local brew_bin
+    for brew_bin in \
+        /home/linuxbrew/.linuxbrew/bin/brew \
+        "$HOME/.linuxbrew/bin/brew" \
+        /opt/homebrew/bin/brew \
+        /usr/local/bin/brew; do
+        if [[ -x "$brew_bin" ]]; then
+            # shellcheck disable=SC1091
+            eval "$("$brew_bin" shellenv)"
+            return 0
+        fi
+    done
+    return 1
+}
+
 pkg_field() {
     local block="$1" key="$2"
     echo "$block" | awk -v k="$key" '
@@ -95,7 +116,10 @@ install_one() {
                 log "skip $name (already installed)"
                 return 0
             fi
-            command -v brew &>/dev/null || return 0
+            if ! command -v brew &>/dev/null; then
+                log "skip $name (brew not in PATH)"
+                return 0
+            fi
             install_brew "$name"
             ;;
         apt)
@@ -163,6 +187,8 @@ install_one() {
 main() {
     local manifest="${1:?usage: ensure-packages.sh MANIFEST.toml}"
     [ -f "$manifest" ] || { log "missing manifest: $manifest"; exit 1; }
+
+    _ensure_brew_path || log "warning: brew not available; brew packages will be skipped"
 
     local block=""
     while IFS= read -r line || [ -n "$line" ]; do
