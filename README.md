@@ -11,7 +11,9 @@ Public cross-platform shell and tool configuration for the multi-machine dotfile
 
 ```
 agents/AGENTS.md          # generic agent guidelines (public)
-skills/shared/            # public agent skills (linked by link-skills.sh)
+skills/shared/            # public agent skills (linked on all hosts via link-skills.sh)
+                          #   workspace-manage — S+P+W dotfiles workflow
+                          #   using-uv-run — Python via uv
 config/
   atuin/config.toml
   git/gitconfig.shared

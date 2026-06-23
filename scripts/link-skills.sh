@@ -3,6 +3,9 @@
 # Usage: link-skills.sh [tier] [consumer_root]
 #   tier: devspace | personal (optional — shared tier is always linked)
 #   consumer_root: lfeng/dotfiles or liangjuf/dotfiles root (required when tier is set)
+#
+# skills/shared/ (e.g. workspace-manage, using-uv-run) is linked on every host:
+# work-mac, personal-mac, personal-ec2, and devspace.
 
 set -euo pipefail
 
