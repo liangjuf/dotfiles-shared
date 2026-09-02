@@ -56,6 +56,7 @@ install_brew() {
     brew list "$name" &>/dev/null 2>&1 && return 0
     log "brew install $name"
     brew install "$name"
+    _ensure_brew_path || log "warning: brew not in PATH after installing $name"
 }
 
 install_apt() {
@@ -151,14 +152,22 @@ install_one() {
             install_curl "$name" "$version" "$installer_url"
             ;;
         npm)
+            _ensure_brew_path || true
             if already_installed "$check"; then
                 log "skip $name (already installed)"
                 return 0
             fi
+            if ! command -v npm &>/dev/null; then
+                log "error: npm not in PATH (install node first)"
+                return 1
+            fi
             local npm_pkg
             npm_pkg="$(pkg_field "$block" package)"
             npm_pkg="${npm_pkg:-$name}"
-            log "npm install -g $npm_pkg"
+            export NPM_CONFIG_PREFIX="${NPM_CONFIG_PREFIX:-$HOME/.local}"
+            mkdir -p "$NPM_CONFIG_PREFIX/bin"
+            export PATH="$NPM_CONFIG_PREFIX/bin:$PATH"
+            log "npm install -g $npm_pkg (prefix=$NPM_CONFIG_PREFIX)"
             npm install -g --yes "$npm_pkg"
             ;;
         binary)
