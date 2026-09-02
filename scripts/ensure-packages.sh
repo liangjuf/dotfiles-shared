@@ -51,6 +51,18 @@ already_installed() {
     [ -n "$check" ] && eval "$check" &>/dev/null
 }
 
+_npm_uninstall_stale_codex() {
+    local pkg="$1" keep_prefix="$2" prefix
+    _ensure_brew_path || true
+    for prefix in /opt/homebrew /usr/local "$HOME/.local"; do
+        [ "$prefix" = "$keep_prefix" ] && continue
+        if [ -e "$prefix/lib/node_modules/@openai/codex" ] || [ -e "$prefix/bin/codex" ]; then
+            log "remove stale $pkg from $prefix"
+            npm uninstall -g "$pkg" --prefix "$prefix" 2>/dev/null || true
+        fi
+    done
+}
+
 install_brew() {
     local name="$1"
     brew list "$name" &>/dev/null 2>&1 && return 0
@@ -153,15 +165,11 @@ install_one() {
             ;;
         npm)
             _ensure_brew_path || true
-            if already_installed "$check"; then
-                log "skip $name (already installed)"
-                return 0
-            fi
             if ! command -v npm &>/dev/null; then
                 log "error: npm not in PATH (install node first)"
                 return 1
             fi
-            local npm_pkg npm_prefix npm_bin npm_link_from npm_bin_dir npm_installed_bin
+            local npm_pkg npm_prefix npm_bin npm_link_from npm_installed_bin
             npm_pkg="$(pkg_field "$block" package)"
             npm_pkg="${npm_pkg:-$name}"
             npm_prefix="$(pkg_field "$block" npm_prefix)"
@@ -169,6 +177,13 @@ install_one() {
             npm_prefix="${npm_prefix/#\~/$HOME}"
             npm_bin="$(pkg_field "$block" npm_bin)"
             npm_link_from="$(pkg_field "$block" npm_link_from)"
+            if [ -n "$npm_bin" ] && [ "$npm_pkg" = "@openai/codex" ]; then
+                _npm_uninstall_stale_codex "$npm_pkg" "$npm_prefix"
+            fi
+            if already_installed "$check"; then
+                log "skip $name (already installed)"
+                return 0
+            fi
             mkdir -p "$npm_prefix/bin"
             export NPM_CONFIG_PREFIX="$npm_prefix"
             export PATH="$npm_prefix/bin:$LOCAL_BIN:$PATH"
