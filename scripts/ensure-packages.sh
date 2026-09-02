@@ -161,14 +161,29 @@ install_one() {
                 log "error: npm not in PATH (install node first)"
                 return 1
             fi
-            local npm_pkg
+            local npm_pkg npm_prefix npm_bin npm_link_from npm_bin_dir npm_installed_bin
             npm_pkg="$(pkg_field "$block" package)"
             npm_pkg="${npm_pkg:-$name}"
-            export NPM_CONFIG_PREFIX="${NPM_CONFIG_PREFIX:-$HOME/.local}"
-            mkdir -p "$NPM_CONFIG_PREFIX/bin"
-            export PATH="$NPM_CONFIG_PREFIX/bin:$PATH"
-            log "npm install -g $npm_pkg (prefix=$NPM_CONFIG_PREFIX)"
+            npm_prefix="$(pkg_field "$block" npm_prefix)"
+            npm_prefix="${npm_prefix:-$HOME/.local}"
+            npm_prefix="${npm_prefix/#\~/$HOME}"
+            npm_bin="$(pkg_field "$block" npm_bin)"
+            npm_link_from="$(pkg_field "$block" npm_link_from)"
+            mkdir -p "$npm_prefix/bin"
+            export NPM_CONFIG_PREFIX="$npm_prefix"
+            export PATH="$npm_prefix/bin:$LOCAL_BIN:$PATH"
+            log "npm install -g $npm_pkg (prefix=$npm_prefix)"
             npm install -g --yes "$npm_pkg"
+            if [ -n "$npm_bin" ]; then
+                npm_link_from="${npm_link_from:-codex}"
+                npm_installed_bin="$npm_prefix/bin/$npm_link_from"
+                if [ ! -e "$npm_installed_bin" ]; then
+                    log "error: npm bin not found at $npm_installed_bin"
+                    return 1
+                fi
+                ln -sf "$npm_installed_bin" "$LOCAL_BIN/$npm_bin"
+                log "linked $LOCAL_BIN/$npm_bin -> $npm_installed_bin"
+            fi
             ;;
         binary)
             if already_installed "$check"; then
