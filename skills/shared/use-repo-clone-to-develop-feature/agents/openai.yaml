@@ -1,0 +1,4 @@
+interface:
+  display_name: "Use Repo Clone to Develop Feature"
+  short_description: "Start feature branches in isolated repo clones."
+  default_prompt: "Use $use-repo-clone-to-develop-feature to start this feature in a separate repo clone."

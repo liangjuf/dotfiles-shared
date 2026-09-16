@@ -1,3 +1,3 @@
-# work-mac overlay — chezmoi only; no AI agents, no gopass (see plan)
+# work-mac overlay — company laptop (no vendor-specific tooling in shared)
 
 export WORKSPACE_ROOT="${WORKSPACE_ROOT:-$HOME/work}"

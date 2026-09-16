@@ -9,6 +9,12 @@ export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
 command -v eza &>/dev/null && alias ls="eza"
 command -v z &>/dev/null && alias cd="z"
 alias ll="ls -lah"
+command -v claude &>/dev/null && alias cc='claude --dangerously-skip-permissions'
+if command -v cdx &>/dev/null; then
+  alias cx='cdx --dangerously-bypass-approvals-and-sandbox'
+elif command -v codex &>/dev/null; then
+  alias cx='codex --dangerously-bypass-approvals-and-sandbox'
+fi
 
 # --- GPG / pass (interactive shells) ---
 if [[ -o interactive && -t 0 ]]; then

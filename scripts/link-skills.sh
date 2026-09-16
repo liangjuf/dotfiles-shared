@@ -4,8 +4,7 @@
 #   tier: devspace | personal (optional — shared tier is always linked)
 #   consumer_root: lfeng/dotfiles or liangjuf/dotfiles root (required when tier is set)
 #
-# skills/shared/ (e.g. workspace-manage, using-uv-run) is linked on every host:
-# work-mac, personal-mac, personal-ec2, and devspace.
+# skills/shared/ is linked on every host (work-mac, personal-mac, and any work Linux overlay).
 
 set -euo pipefail
 
@@ -14,11 +13,13 @@ SHARED="${SHARED:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 TIER="${1:-}"
 CONSUMER_ROOT="${2:-${DOTFILES_ROOT:-}}"
 
+AGENTS_SKILLS="${AGENTS_SKILLS:-$HOME/.agents/skills}"
 CLAUDE_SKILLS="${CLAUDE_SKILLS:-$HOME/.claude/skills}"
 CODEX_SKILLS="${CODEX_SKILLS:-$HOME/.codex/skills}"
 CURSOR_SKILLS="${CURSOR_SKILLS:-$HOME/.cursor/skills}"
 
-SKILL_DEST_DIRS=("$CLAUDE_SKILLS" "$CODEX_SKILLS" "$CURSOR_SKILLS")
+# Canonical shared root first; normalize-agent-skill-sources.sh de-dupes agent dirs.
+SKILL_DEST_DIRS=("$AGENTS_SKILLS" "$CLAUDE_SKILLS" "$CODEX_SKILLS" "$CURSOR_SKILLS")
 
 log() { echo "[link-skills] $*"; }
 
