@@ -56,8 +56,8 @@ Submodule path in P (and W if you have one): `shared/` → S.
 
 | Role | Host | Manager | Overlay | Extra packages |
 |------|------|---------|---------|----------------|
-| `work-mac` | Work MacBook | chezmoi (P) | `shared/overlays/work-mac.zsh` | node, claude, cdx |
-| `personal-mac` | Personal Mac | chezmoi (P) | `shared/overlays/personal-mac.zsh` | node, claude, cdx, pass, gpg |
+| `work-mac` | Work MacBook | chezmoi (P) | `shared/overlays/work-mac.zsh` | node, claude, codex |
+| `personal-mac` | Personal Mac | chezmoi (P) | `shared/overlays/personal-mac.zsh` | node, claude, codex, pass, gpg |
 
 Chezmoi role is set in `~/.config/chezmoi/chezmoi.toml` (`[data].role`, `name`, `email`). Optional `[data].ghe_host` (e.g. `github.company.com`) wires git credential helper + SSH — leave it unset until the new company GHE exists.
 

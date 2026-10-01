@@ -51,18 +51,6 @@ already_installed() {
     [ -n "$check" ] && eval "$check" &>/dev/null
 }
 
-_npm_uninstall_stale_codex() {
-    local pkg="$1" keep_prefix="$2" prefix
-    _ensure_brew_path || true
-    for prefix in /opt/homebrew /usr/local "$HOME/.local"; do
-        [ "$prefix" = "$keep_prefix" ] && continue
-        if [ -e "$prefix/lib/node_modules/@openai/codex" ] || [ -e "$prefix/bin/codex" ]; then
-            log "remove stale $pkg from $prefix"
-            npm uninstall -g "$pkg" --prefix "$prefix" 2>/dev/null || true
-        fi
-    done
-}
-
 install_brew() {
     local name="$1"
     brew list "$name" &>/dev/null 2>&1 && return 0
@@ -98,6 +86,20 @@ install_curl() {
         log "curl install $name ($version)"
     else
         log "curl install $name (latest)"
+    fi
+    # Keep ~/.local/bin first so installers that rewrite the shell rc
+    # (Codex) see it already on PATH and leave chezmoi-managed files alone.
+    export PATH="$LOCAL_BIN:$PATH"
+    if [ "$name" = "codex" ]; then
+        export CODEX_NON_INTERACTIVE=1
+        if [ -L "$LOCAL_BIN/cdx" ] || [ -e "$LOCAL_BIN/cdx" ]; then
+            log "remove old cdx command at $LOCAL_BIN/cdx"
+            rm -f "$LOCAL_BIN/cdx"
+        fi
+        if [ -d "$HOME/.local/cdx" ] && command -v npm &>/dev/null; then
+            log "remove old npm Codex prefix ~/.local/cdx"
+            npm uninstall -g @openai/codex --prefix "$HOME/.local/cdx" 2>/dev/null || true
+        fi
     fi
     curl --proto '=https' --tlsv1.2 -LsSf "$url" | bash
 }
@@ -177,9 +179,6 @@ install_one() {
             npm_prefix="${npm_prefix/#\~/$HOME}"
             npm_bin="$(pkg_field "$block" npm_bin)"
             npm_link_from="$(pkg_field "$block" npm_link_from)"
-            if [ -n "$npm_bin" ] && [ "$npm_pkg" = "@openai/codex" ]; then
-                _npm_uninstall_stale_codex "$npm_pkg" "$npm_prefix"
-            fi
             if already_installed "$check"; then
                 log "skip $name (already installed)"
                 return 0
@@ -190,7 +189,7 @@ install_one() {
             log "npm install -g $npm_pkg (prefix=$npm_prefix)"
             npm install -g --yes "$npm_pkg"
             if [ -n "$npm_bin" ]; then
-                npm_link_from="${npm_link_from:-codex}"
+                npm_link_from="${npm_link_from:-$npm_bin}"
                 npm_installed_bin="$npm_prefix/bin/$npm_link_from"
                 if [ ! -e "$npm_installed_bin" ]; then
                     log "error: npm bin not found at $npm_installed_bin"
