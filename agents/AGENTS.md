@@ -64,7 +64,11 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 **Keep the main checkout stable. Use the worktree skill for feature work.**
 
-For feature development, non-trivial refactors, and PR-bound changes, invoke the `use-worktree-to-develop-feature` skill before editing. The skill owns branch naming, worktree placement, and cleanup rules.
+For feature development, non-trivial refactors, and PR-bound changes, invoke the `use-worktree-to-develop-feature` skill before editing. The skill owns branch naming, worktree placement, and cleanup rules. If the user asks for a separate clone instead of a worktree, use `use-repo-clone-to-develop-feature`.
+
+## 6. Pull Requests
+
+When preparing PRs, follow **Why — What — How — Test**. Each iteration of the PR must update the description so it matches the current diff.
 
 ---
 

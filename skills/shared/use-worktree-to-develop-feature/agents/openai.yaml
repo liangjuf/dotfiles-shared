@@ -1,0 +1,4 @@
+interface:
+  display_name: "Use Worktree to Develop Feature"
+  short_description: "Start feature branches in isolated worktrees."
+  default_prompt: "Use $use-worktree-to-develop-feature to start this feature in a git worktree."

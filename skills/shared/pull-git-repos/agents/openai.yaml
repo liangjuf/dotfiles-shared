@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pull Git Repos"
+  short_description: "Pull repos and clean merged work."
+  default_prompt: "Use $pull-git-repos to pull every clean git repo and remove merged or locally merged worktrees and branches under my home directory."
