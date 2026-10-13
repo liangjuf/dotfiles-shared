@@ -231,13 +231,13 @@ main() {
     local block=""
     while IFS= read -r line || [ -n "$line" ]; do
         if [[ "$line" == "[[package]]" ]]; then
-            [ -n "$block" ] && install_one "$block"
+            [ -n "$block" ] && install_one "$block" </dev/null
             block=""
         else
             block+="$line"$'\n'
         fi
     done < "$manifest"
-    [ -n "$block" ] && install_one "$block"
+    [ -n "$block" ] && install_one "$block" </dev/null
 }
 
 main "$@"
