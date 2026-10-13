@@ -50,8 +50,8 @@ NPM_SKILL_PACKS=(
     "kepano/obsidian-skills:*"
     "tw93/kami:*"
     "wandb/skills:wandb-primary"
-    "cursor/plugins:thermo-nuclear-code-quality-review"
-    "cursor/plugins:unslop"
+    "cursor/plugins/thermos:thermo-nuclear-code-quality-review"
+    "cursor/plugins/pstack:unslop"
 )
 
 NPM_SKILL_AGENTS=(claude-code codex cursor)
