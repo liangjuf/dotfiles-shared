@@ -4,7 +4,7 @@ Public cross-platform shell, tools, and **coding-agent** configuration.
 
 **Consumers** (git submodule at `shared/`):
 
-- [liangjuf/dotfiles](https://github.com/liangjuf/dotfiles) — chezmoi (`work-mac`, `personal-mac`)
+- [liangjuf/dotfiles](https://github.com/liangjuf/dotfiles) — chezmoi (`work-mac`, `personal-mac`, `work-linux`)
 - Optional company GHE Coder repo — `install.sh` overlay only
 
 `personal-ec2` is deprecated.
@@ -20,6 +20,7 @@ config/
 overlays/
   work-mac.zsh
   personal-mac.zsh
+  work-linux.zsh
 packages.toml
 scripts/
   ensure-packages.sh
@@ -46,7 +47,7 @@ S stays public: no secrets, no employer hostnames, no internal skill taps.
 
 1. Edit and push this repo.
 2. Bump `shared/` in chezmoi (`~/.local/share/chezmoi`) and in any company Coder repo.
-3. `chezmoi update` on each Mac.
+3. `chezmoi update` on each Mac and Linux host.
 
 ```bash
 cd ~/.local/share/chezmoi
