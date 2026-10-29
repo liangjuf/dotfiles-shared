@@ -70,6 +70,13 @@ For feature development, non-trivial refactors, and PR-bound changes, invoke the
 
 When preparing PRs, follow **Why — What — How — Test**. Each iteration of the PR must update the description so it matches the current diff.
 
+## 7. Host Toolchains
+
+**Build with the toolchains the host already has. No throwaway installs.**
+
+- Rust: use the rustup install in `~/.cargo` / `~/.rustup`. Pick a version with `cargo +<version>`; add a missing one with `rustup toolchain install <version>`, or let the repo's `rust-toolchain.toml` install its pin.
+- Don't create temporary Rust environments (rustup under `/tmp`, a separate `RUSTUP_HOME`/`CARGO_HOME`, Docker Rust images) unless the host toolchain truly can't do the job. If you must, say why.
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
