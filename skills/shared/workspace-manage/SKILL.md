@@ -4,7 +4,7 @@ description: >-
   Manage the two-layer dotfiles setup (dotfiles-shared + liangjuf/dotfiles chezmoi),
   plus an optional work Linux/Coder repo for a future company GHE. Use when editing
   shell config, packages, templates, bumping the shared submodule, first-time host
-  setup, chezmoi apply/update, or syncing work-mac and personal-mac.
+  setup, chezmoi apply/update, or syncing work-mac, personal-mac and the work-linux devbox.
 ---
 
 # Dotfiles management (S + P, optional W)
@@ -18,7 +18,7 @@ A third **W** repo is only a Coder/`install.sh` overlay for whatever company GHE
 | Layer | Repo | Remote | Hosts | Entry point |
 |-------|------|--------|-------|-------------|
 | **S** Shared | `dotfiles-shared` | `https://github.com/liangjuf/dotfiles-shared` (public) | all | direct git |
-| **P** Personal | `liangjuf/dotfiles` | `https://github.com/liangjuf/dotfiles` (private) | work-mac, personal-mac | `chezmoi` |
+| **P** Personal | `liangjuf/dotfiles` | `https://github.com/liangjuf/dotfiles` (private) | work-mac, personal-mac, work-linux | `chezmoi` |
 | **W** Work Linux | company GHE fork (optional) | private GHE | Coder / work Linux | `install.sh` |
 
 Submodule path in P (and W if you have one): `shared/` → S.
@@ -29,11 +29,11 @@ Submodule path in P (and W if you have one): `shared/` → S.
 |---------|---|---|---|
 | `zsh/*.zsh`, `p10k.zsh`, `tmux.conf` | ✓ | | |
 | `packages.toml`, `ensure-packages.sh`, `init-omz.sh` | ✓ | | |
-| `overlays/{work-mac,personal-mac}.zsh` | ✓ | | |
+| `overlays/{work-mac,personal-mac,work-linux}.zsh` | ✓ | | |
 | `agents/AGENTS.md`, `skills/shared/` | ✓ | | |
 | `config/npm-skills.sh`, `sync-managed-skills.sh`, `normalize-agent-skill-sources.sh` | ✓ | | |
 | chezmoi templates (`dot_*`, `run_onchange_*`) | | ✓ | |
-| `packages/{work-mac,personal-mac}.toml`, `bootstrap.sh` | | ✓ | |
+| `packages/{work-mac,personal-mac,work-linux}.toml`, `bootstrap.sh` | | ✓ | |
 | `skills/personal/` | | ✓ | |
 | Coder `install.sh`, company packages, company overlay | | | ✓ |
 | Company-internal URLs, SSO, secret stores | never S | never (use local secrets) | work only |
@@ -58,6 +58,7 @@ Submodule path in P (and W if you have one): `shared/` → S.
 |------|------|---------|---------|----------------|
 | `work-mac` | Work MacBook | chezmoi (P) | `shared/overlays/work-mac.zsh` | node, claude, codex |
 | `personal-mac` | Personal Mac | chezmoi (P) | `shared/overlays/personal-mac.zsh` | node, claude, codex, pass, gpg |
+| `work-linux` | Headless work devbox (Debian/Ubuntu VM over SSH) | chezmoi (P) | `shared/overlays/work-linux.zsh` | work-mac agents + opencode, kubectl, kubelogin, cloudflared, k9s, gcloud (apt) |
 
 Chezmoi role is set in `~/.config/chezmoi/chezmoi.toml` (`[data].role`, `name`, `email`). Optional `[data].ghe_host` (e.g. `github.company.com`) wires git credential helper + SSH — leave it unset until the new company GHE exists.
 
@@ -112,6 +113,14 @@ chezmoi apply
 ```
 
 4. One-time: `atuin login`; Claude/Codex auth; on work-mac, SSH key for the company GHE if `ghe_host` is set.
+
+### work-linux (headless devbox)
+
+Needs passwordless `sudo`. Install chezmoi to `~/.local/bin` (`get.chezmoi.io`), write the
+work-linux block from `chezmoi.toml.example`, get P onto the host (P is private: `gh auth login`
+first, or push a branch from a laptop over SSH), then `submodule update` + `chezmoi apply`.
+`bootstrap.sh` adds Linuxbrew prerequisites, the zsh login shell and apt gcloud. Logins are
+headless: open the printed URLs on the laptop. See P's README, "work-linux (headless devbox)".
 
 ### Future company Coder / GHE (W)
 
@@ -182,7 +191,7 @@ Do **not** put employer rbx-style taps in S. A new company tap list belongs in W
 ## Agent workflow checklist
 
 1. Identify layer — S vs P vs optional W.
-2. Identify host — `work-mac` vs `personal-mac`.
+2. Identify host — `work-mac`, `personal-mac` or `work-linux`.
 3. Edit S first if the change is cross-cutting.
 4. Bump `shared/` in P after S push.
 5. Push all touched repos before telling the user to sync.
