@@ -77,6 +77,14 @@ When preparing PRs, follow **Why — What — How — Test**. Each iteration of 
 - Rust: use the rustup install in `~/.cargo` / `~/.rustup`. Pick a version with `cargo +<version>`; add a missing one with `rustup toolchain install <version>`, or let the repo's `rust-toolchain.toml` install its pin.
 - Don't create temporary Rust environments (rustup under `/tmp`, a separate `RUSTUP_HOME`/`CARGO_HOME`, Docker Rust images) unless the host toolchain truly can't do the job. If you must, say why.
 
+## 8. Delegation
+
+**In T3 Code, prefer handing well-defined implementation to an opencode subagent. Review its work when it finishes.**
+
+- A task is well-defined when the instructions are clear and you can name the files to change and the check that proves it works.
+- Start the subagent with T3's `delegate_task`, provider `opencode`, and let it do the implementation.
+- When it finishes, review the implementation against the task and run the check yourself before you report done.
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
