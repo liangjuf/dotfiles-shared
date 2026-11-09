@@ -53,6 +53,11 @@ bash <skill-dir>/scripts/pull_all_git_repos.sh --cleanup-merged-worktrees --clea
 - `--jobs N`: pull up to N repos in parallel. Default is 1.
 - `--allow-dirty`: do not skip dirty worktrees.
 - `--no-prune`: skip `git pull --prune`.
+- `--no-pull`: do not pull; only run cleanup steps. Repos with nothing to clean
+  count as skipped without a per-repo line.
+- `--min-idle-hours N`: with `--cleanup-merged-worktrees`, skip merged worktrees
+  whose contents changed or are a process's working directory within the last N
+  hours.
 - `--cleanup-merged-worktrees`: remove clean linked worktrees after confirming
   the branch's GitHub PR is merged or the branch is locally merged into the
   default branch.
