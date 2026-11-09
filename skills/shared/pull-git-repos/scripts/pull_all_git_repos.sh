@@ -260,24 +260,38 @@ merged_cleanup_info() {
     locally_merged_info "$repo" "$branch"
 }
 
+# Print the cwd of each running process, one per line. Linux has /proc; on
+# systems without it (macOS) fall back to lsof, and give up silently if the
+# system has neither.
+process_cwds() {
+    local pid_dir
+
+    if [ -d /proc ]; then
+        for pid_dir in /proc/[0-9]*; do
+            [ -e "$pid_dir/cwd" ] || continue
+            readlink "$pid_dir/cwd" 2>/dev/null || true
+        done
+    elif command -v lsof >/dev/null 2>&1; then
+        lsof -a -d cwd -Fn 2>/dev/null | sed -n 's/^n//p'
+    fi
+}
+
 worktree_recently_active() {
     local repo="$1"
-    local minutes pid_dir cwd_link
+    local minutes repo_real cwd
 
     minutes=$((min_idle_hours * 60))
     if [ -n "$(find "$repo" -mmin "-$minutes" -print -quit 2>/dev/null)" ]; then
         return 0
     fi
 
-    if [ -d /proc ]; then
-        for pid_dir in /proc/[0-9]*; do
-            [ -e "$pid_dir/cwd" ] || continue
-            cwd_link="$(readlink "$pid_dir/cwd" 2>/dev/null || true)"
-            case "$cwd_link" in
-                "$repo"|"$repo"/*) return 0 ;;
-            esac
-        done
-    fi
+    # lsof reports cwds with symlinks resolved (/var -> /private/var on macOS).
+    repo_real="$(realpath "$repo" 2>/dev/null || printf '%s\n' "$repo")"
+    while IFS= read -r cwd; do
+        case "$cwd" in
+            "$repo_real"|"$repo_real"/*) return 0 ;;
+        esac
+    done < <(process_cwds)
 
     return 1
 }
