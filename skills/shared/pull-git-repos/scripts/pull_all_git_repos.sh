@@ -3,7 +3,7 @@ set -u
 
 usage() {
     cat <<'USAGE'
-Usage: pull_all_git_repos.sh [--root PATH ...] [--dry-run] [--jobs N] [--allow-dirty] [--no-prune] [--cleanup-merged-worktrees] [--cleanup-merged-branches]
+Usage: pull_all_git_repos.sh [--root PATH ...] [--dry-run] [--jobs N] [--allow-dirty] [--no-prune] [--no-pull] [--cleanup-merged-worktrees] [--cleanup-merged-branches] [--min-idle-hours N]
 
 Find git working trees under the selected roots, add their linked worktrees,
 and pull clean branches with upstreams using git pull --ff-only.
@@ -14,6 +14,10 @@ Options:
   --jobs N                     Pull up to N repositories at a time. Defaults to 1.
   --allow-dirty                Pull dirty worktrees too. Use only when explicitly intended.
   --no-prune                   Do not pass --prune to git pull.
+  --no-pull                    Do not pull at all; only run cleanup steps. Repos neither
+                               cleaned nor pulled are counted as skipped without a line.
+  --min-idle-hours N           With --cleanup-merged-worktrees, skip merged worktrees
+                               whose contents changed or are in use within the last N hours.
   --cleanup-merged-worktrees   Remove clean linked worktrees whose GitHub PR is merged or whose branch is merged into the default branch.
   --cleanup-merged-branches    Delete local branches whose GitHub PR is merged or whose branch is merged into the default branch.
   -h, --help                   Show this help.
@@ -25,8 +29,10 @@ dry_run=0
 jobs=1
 allow_dirty=0
 prune=1
+no_pull=0
 cleanup_merged_worktrees=0
 cleanup_merged_branches=0
+min_idle_hours=0
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -57,6 +63,18 @@ while [ "$#" -gt 0 ]; do
         --no-prune)
             prune=0
             shift
+            ;;
+        --no-pull)
+            no_pull=1
+            shift
+            ;;
+        --min-idle-hours)
+            if [ "$#" -lt 2 ] || ! [[ "$2" =~ ^[1-9][0-9]*$ ]]; then
+                echo "error: --min-idle-hours requires a positive integer" >&2
+                exit 2
+            fi
+            min_idle_hours="$2"
+            shift 2
             ;;
         --cleanup-merged-worktrees)
             cleanup_merged_worktrees=1
@@ -242,6 +260,28 @@ merged_cleanup_info() {
     locally_merged_info "$repo" "$branch"
 }
 
+worktree_recently_active() {
+    local repo="$1"
+    local minutes pid_dir cwd_link
+
+    minutes=$((min_idle_hours * 60))
+    if [ -n "$(find "$repo" -mmin "-$minutes" -print -quit 2>/dev/null)" ]; then
+        return 0
+    fi
+
+    if [ -d /proc ]; then
+        for pid_dir in /proc/[0-9]*; do
+            [ -e "$pid_dir/cwd" ] || continue
+            cwd_link="$(readlink "$pid_dir/cwd" 2>/dev/null || true)"
+            case "$cwd_link" in
+                "$repo"|"$repo"/*) return 0 ;;
+            esac
+        done
+    fi
+
+    return 1
+}
+
 cleanup_merged_worktree() {
     local repo="$1"
     local branch="$2"
@@ -252,6 +292,11 @@ cleanup_merged_worktree() {
 
     cleanup_info="$(merged_cleanup_info "$repo" "$branch")"
     [ -n "$cleanup_info" ] || return 1
+
+    if [ "$min_idle_hours" -gt 0 ] && worktree_recently_active "$repo"; then
+        echo "SKIP recently active worktree: $repo [$branch, $cleanup_info]"
+        return 24
+    fi
 
     if [ "$dry_run" -eq 1 ]; then
         echo "WOULD remove merged worktree: $repo [$branch, $cleanup_info]"
@@ -354,6 +399,10 @@ pull_repo() {
         return 30
     elif [ "$cleanup_status" -ne 1 ]; then
         return "$cleanup_status"
+    fi
+
+    if [ "$no_pull" -eq 1 ]; then
+        return 25
     fi
 
     upstream="$(git -C "$repo" rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null || true)"
