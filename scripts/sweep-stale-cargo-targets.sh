@@ -77,18 +77,34 @@ human_size() {
     }'
 }
 
+# Print the cwd of each running process, one per line. Linux has /proc; on
+# systems without it (macOS) fall back to lsof, and give up silently if the
+# system has neither.
+process_cwds() {
+    local pid_dir
+
+    if [ -d /proc ]; then
+        for pid_dir in /proc/[0-9]*; do
+            [ -e "$pid_dir/cwd" ] || continue
+            readlink "$pid_dir/cwd" 2>/dev/null || true
+        done
+    elif command -v lsof >/dev/null 2>&1; then
+        lsof -a -d cwd -Fn 2>/dev/null | sed -n 's/^n//p'
+    fi
+}
+
 parent_in_use() {
     local parent="$1"
-    local pid_dir cwd_link
+    local parent_real cwd
 
-    [ -d /proc ] || return 1
-    for pid_dir in /proc/[0-9]*; do
-        [ -e "$pid_dir/cwd" ] || continue
-        cwd_link="$(readlink "$pid_dir/cwd" 2>/dev/null || true)"
-        case "$cwd_link" in
-            "$parent"|"$parent"/*) return 0 ;;
+    # lsof reports cwds with symlinks resolved (/var -> /private/var on macOS),
+    # and the parent comes from an unresolved find path; resolve before comparing.
+    parent_real="$(realpath "$parent" 2>/dev/null || printf '%s\n' "$parent")"
+    while IFS= read -r cwd; do
+        case "$cwd" in
+            "$parent_real"|"$parent_real"/*) return 0 ;;
         esac
-    done
+    done < <(process_cwds)
     return 1
 }
 

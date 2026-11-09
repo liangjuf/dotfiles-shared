@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # --no-pull --cleanup-merged-worktrees --min-idle-hours removes merged linked
-# worktrees that have been idle long enough, keeps recently active ones, and
-# never pulls. Uses the local-merge path: a stub gh that fails keeps the GitHub
-# PR lookup out of the way.
+# worktrees that have been idle long enough, keeps recently active ones and
+# ones a process is sitting in, and never pulls. Uses the local-merge path: a
+# stub gh that fails keeps the GitHub PR lookup out of the way.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -35,10 +35,10 @@ git -C "$seeder" add file.txt
 git -C "$seeder" commit -qm 'initial'
 git -C "$seeder" push -q -u origin main
 
-# Primary clone with two feature branches, both merged into main and pushed.
+# Primary clone with three feature branches, all merged into main and pushed.
 primary="$fixture/primary"
 git clone -q "$origin" "$primary"
-for name in old-wt fresh-wt; do
+for name in old-wt fresh-wt busy-wt; do
     git -C "$primary" checkout -q -b "$name"
     echo "$name" > "$primary/$name.txt"
     git -C "$primary" add "$name.txt"
@@ -47,15 +47,25 @@ done
 git -C "$primary" checkout -q main
 git -C "$primary" merge -q --no-ff old-wt -m 'merge old-wt'
 git -C "$primary" merge -q --no-ff fresh-wt -m 'merge fresh-wt'
+git -C "$primary" merge -q --no-ff busy-wt -m 'merge busy-wt'
 git -C "$primary" push -q origin main
 
 old_wt="$fixture/old"
 fresh_wt="$fixture/fresh"
+busy_wt="$fixture/busy"
 git -C "$primary" worktree add -q "$old_wt" old-wt
 git -C "$primary" worktree add -q "$fresh_wt" fresh-wt
+git -C "$primary" worktree add -q "$busy_wt" busy-wt
 
-# One worktree is long idle; the other was just touched.
+# Two worktrees are long idle; the third was just touched.
 find "$old_wt" -exec touch -t 202001010000 {} +
+find "$busy_wt" -exec touch -t 202001010000 {} +
+
+# One of the idle worktrees has a process sitting in it: old enough by mtime,
+# but still in use, so it must be skipped on every OS.
+(cd "$busy_wt" && exec sleep 300) &
+busy_pid=$!
+trap 'kill "$busy_pid" 2>/dev/null; rm -rf "$fixture"' EXIT
 
 # Advance origin/main from the seeder so a pull would move the primary's main.
 git -C "$seeder" pull -q
@@ -72,9 +82,12 @@ grep -Fq "WOULD remove merged worktree: $old_wt [old-wt," <<<"$dry_out" \
     || fail "dry run did not plan to remove the idle worktree: $dry_out"
 grep -Fq "SKIP recently active worktree: $fresh_wt [fresh-wt," <<<"$dry_out" \
     || fail "dry run did not skip the fresh worktree: $dry_out"
+grep -Fq "SKIP recently active worktree: $busy_wt [busy-wt," <<<"$dry_out" \
+    || fail "dry run did not skip the in-use worktree: $dry_out"
 [ -d "$old_wt" ] || fail "dry run removed the idle worktree"
 [ -d "$fresh_wt" ] || fail "dry run removed the fresh worktree"
-echo "PASS: dry run plans removal of idle worktree and skips the active one"
+[ -d "$busy_wt" ] || fail "dry run removed the in-use worktree"
+echo "PASS: dry run plans removal of idle worktree and skips the active ones"
 
 # Real run with --no-pull: removes the idle worktree, keeps the active one.
 out="$(bash "$SCRIPT" --root "$fixture" --no-pull --cleanup-merged-worktrees --min-idle-hours 24)"
@@ -82,9 +95,12 @@ grep -Fq "OK removed merged worktree: $old_wt [old-wt," <<<"$out" \
     || fail "did not remove the idle worktree: $out"
 grep -Fq "SKIP recently active worktree: $fresh_wt [fresh-wt," <<<"$out" \
     || fail "did not skip the fresh worktree: $out"
+grep -Fq "SKIP recently active worktree: $busy_wt [busy-wt," <<<"$out" \
+    || fail "did not skip the in-use worktree: $out"
 [ ! -d "$old_wt" ] || fail "idle worktree still exists"
 [ -d "$fresh_wt" ] || fail "fresh worktree was removed"
-echo "PASS: --no-pull removes idle merged worktree and keeps the active one"
+[ -d "$busy_wt" ] || fail "in-use worktree was removed"
+echo "PASS: --no-pull removes idle merged worktree and keeps the active ones"
 
 # --no-pull must not pull: the primary's main did not move even though origin/main advanced.
 main_after="$(git -C "$primary" rev-parse main)"
