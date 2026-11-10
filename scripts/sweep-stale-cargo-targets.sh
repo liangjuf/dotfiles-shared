@@ -3,22 +3,27 @@ set -u
 
 usage() {
     cat <<'USAGE'
-Usage: sweep-stale-cargo-targets.sh [--root PATH ...] [--days N] [--dry-run]
+Usage: sweep-stale-cargo-targets.sh [--root PATH ...] [--days N] [--max-size SIZE] [--dry-run]
 
 Delete cargo build output directories (a directory named "target" containing a
 CACHEDIR.TAG marker) that have not been built in the last N days. Directories
-named "target" without the marker are never touched.
+named "target" without the marker are never touched. With --max-size, a target
+that is not stale but has grown beyond SIZE is also deleted once nothing has
+written to it for 2 hours.
 
 Options:
-  --root PATH   Root directory to scan. Repeatable. Defaults to $HOME.
-  --days N      Targets with no modification in the last N days are stale. Defaults to 7.
-  --dry-run     Print planned removals without deleting anything.
-  -h, --help    Show this help.
+  --root PATH      Root directory to scan. Repeatable. Defaults to $HOME.
+  --days N         Targets with no modification in the last N days are stale. Defaults to 7.
+  --max-size SIZE  Also remove a target bigger than SIZE (e.g. 40G) once nothing
+                   has written to it for 2 hours, even if it is not stale.
+  --dry-run        Print planned removals without deleting anything.
+  -h, --help       Show this help.
 USAGE
 }
 
 roots=()
 days=7
+max_size_kib=""
 dry_run=0
 
 while [ "$#" -gt 0 ]; do
@@ -37,6 +42,19 @@ while [ "$#" -gt 0 ]; do
                 exit 2
             fi
             days="$2"
+            shift 2
+            ;;
+        --max-size)
+            if [ "$#" -lt 2 ] || ! [[ "$2" =~ ^[1-9][0-9]*[KMG]$ ]]; then
+                echo "error: --max-size requires a size like 40G" >&2
+                exit 2
+            fi
+            max_size="${2%[KMG]}"
+            case "$2" in
+                *K) max_size_kib=$((max_size)) ;;
+                *M) max_size_kib=$((max_size * 1024)) ;;
+                *G) max_size_kib=$((max_size * 1024 * 1024)) ;;
+            esac
             shift 2
             ;;
         --dry-run)
@@ -124,9 +142,21 @@ for root in "${roots[@]}"; do
     while IFS= read -r target; do
         [ -n "$target" ] || continue
 
+        reason=stale
         if [ -n "$(find "$target" -maxdepth 3 -mmin "-$minutes" -print -quit 2>/dev/null)" ]; then
-            kept=$((kept + 1))
-            continue
+            # Not stale: only remove if over the size cap and idle for a while.
+            if [ -z "$max_size_kib" ] \
+                || [ -n "$(find "$target" -maxdepth 3 -mmin -120 -print -quit 2>/dev/null)" ]; then
+                kept=$((kept + 1))
+                continue
+            fi
+            size_kib="$(du -sk "$target" 2>/dev/null | awk '{print $1}')"
+            [ -n "$size_kib" ] || size_kib=0
+            if [ "$size_kib" -le "$max_size_kib" ]; then
+                kept=$((kept + 1))
+                continue
+            fi
+            reason=oversized
         fi
 
         parent="$(dirname "$target")"
@@ -136,23 +166,25 @@ for root in "${roots[@]}"; do
             continue
         fi
 
-        size_kib="$(du -sk "$target" 2>/dev/null | awk '{print $1}')"
-        [ -n "$size_kib" ] || size_kib=0
+        if [ "$reason" = stale ]; then
+            size_kib="$(du -sk "$target" 2>/dev/null | awk '{print $1}')"
+            [ -n "$size_kib" ] || size_kib=0
+        fi
         size="$(human_size "$size_kib")"
 
         if [ "$dry_run" -eq 1 ]; then
-            echo "WOULD remove stale cargo target: $target ($size)"
+            echo "WOULD remove $reason cargo target: $target ($size)"
             removed=$((removed + 1))
             freed_kib=$((freed_kib + size_kib))
             continue
         fi
 
         if rm -rf "$target"; then
-            echo "OK removed stale cargo target: $target ($size)"
+            echo "OK removed $reason cargo target: $target ($size)"
             removed=$((removed + 1))
             freed_kib=$((freed_kib + size_kib))
         else
-            echo "FAIL remove stale cargo target: $target ($size)" >&2
+            echo "FAIL remove $reason cargo target: $target ($size)" >&2
             failed=$((failed + 1))
         fi
     done < <(
